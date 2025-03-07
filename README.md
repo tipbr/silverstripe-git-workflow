@@ -1,5 +1,7 @@
 # silverstripe-git-workflow
 
+This is a simple deployment workflow for SilverStripe projects using GitHub Actions. It automatically deploys your project to a server whenever you push to a specified branch.
+
 ## Installation
 
 Copy the deploy.yml file to your .github/workflows folder in your SilverStripe project.
