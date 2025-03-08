@@ -1,4 +1,10 @@
-name: Deploy SilverStripe Site
+name: Deploy SilverStripe  Site
+
+# Set these to your values
+env:
+  SSH_USERNAME: value
+  SSH_HOST: X.X.X.X or example.com
+  REMOTE_PATH: /container/application/
 
 on:
   push:
@@ -7,27 +13,22 @@ on:
 
 jobs:
   deploy:
+    name: Deploy
     runs-on: ubuntu-latest
+
     steps:
-      - name: Setup SSH key
-        uses: webfactory/ssh-agent@v0.7.0
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Executing remote ssh commands
+        uses: appleboy/ssh-action@v1.2.1
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Add server to known hosts
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
-
-      - name: Deploy to server
-        env:
-          SERVER_USER: ${{ secrets.SERVER_USER }}
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          PROJECT_PATH: ${{ secrets.PROJECT_PATH }}
-        run: |
-          # SSH into server, pull latest code, update dependencies, and build SilverStripe
-          ssh $SERVER_USER@$SERVER_HOST "cd $PROJECT_PATH && \
-            git pull && \
-            composer install --no-dev --optimize-autoloader --no-interaction --no-progress && \
-            php vendor/silverstripe/framework/cli-script.php dev/build flush=all"
+          host: ${{ env.SSH_HOST }}
+          username: ${{ env.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd ${{ env.REMOTE_PATH }} &&
+            git pull origin main && 
+            composer install --no-dev --optimize-autoloader --no-interaction --no-progress &&
+            php vendor/silverstripe/framework/cli-script.php dev/build flush=all
