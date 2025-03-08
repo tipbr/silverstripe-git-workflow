@@ -46,14 +46,14 @@ chmod 700 ~/.ssh
 chmod 600 ~/.ssh/authorized_keys
 ```
 
-C. Configure Your GitHub Repository to Use the Private Key
+C. **Configure Your GitHub Repository to Use the Private Key**
 
 1.  In your GitHub repository, navigate to Settings > Secrets and variables > Actions.
 2.  Add a new repository secret named SSH_PRIVATE_KEY and paste the contents of your private key file (github_action_key).
 
 ### 2. Setting Up a Deploy Key on the Remote Server for GitHub Pulls
 
-**A. Generate a Deploy Key on the Remote Server**
+A. **Generate a Deploy Key on the Remote Server**
 
 1.  SSH into your remote server if not already connected.
 2.  Generate a new SSH key pair for the deploy key:
@@ -62,7 +62,7 @@ C. Configure Your GitHub Repository to Use the Private Key
 ssh-keygen -t rsa -b 4096 -C "deploy-key-for-your-repo" -f ~/.ssh/deploy_key
 ```
 
-**B. Add the Deploy Key to Your GitHub Repository**
+B. **Add the Deploy Key to Your GitHub Repository**
 
 1. Copy the public key from the remote server:
 
@@ -74,7 +74,7 @@ cat ~/.ssh/deploy_key.pub
 3. Click “Add deploy key”, provide a title (e.g., "Remote Server Deploy Key"), and paste the public key.
 4. For pulling code, read-only access is sufficient. Only grant write access if necessary.
 
-**C. Configure SSH on the Remote Server to Use the Deploy Key for GitHub**
+C. **Configure SSH on the Remote Server to Use the Deploy Key for GitHub**
 
 1. Edit (or create) the SSH config file on the remote server (~/.ssh/config):
 
