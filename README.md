@@ -19,6 +19,8 @@ This guide explains how to configure two SSH keys for your deployment process:
 
 ### 1. Setting Up SSH Access from GitHub Action to the Remote Server
 
+For SiteHost, you can go to the control panel and add the key liek project-github-deployer
+
 A. **Generate an SSH Key Pair**
 
 **On your local machine**, open a terminal and run:
