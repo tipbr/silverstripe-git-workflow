@@ -1,120 +1,101 @@
-# silverstripe-git-workflow
+# sitehost-git-workflows
 
-This is a simple deployment workflow for SilverStripe projects using GitHub Actions. It automatically deploys your project to a server whenever you push to a specified branch.
+These are simple example deployment workflows for projects using GitHub Actions. They
+
+Examples included:
+
+- Silverstripe
 
 ## Installation
 
-Copy the deploy.yml file to your .github/workflows folder in your SilverStripe project.
+Copy the relevant deploy.yml file to your .github/workflows folder in your SilverStripe project.
 
 ## Configuration
 
-1. **Generate an SSH Key Pair**
+This guide explains how to configure two SSH keys for your deployment process:
 
-   First, let's create an SSH key specifically for GitHub Actions to use for deployment:
+1. An SSH key for your GitHub Action to log in to your remote server.
+2. A deploy key for the remote server to authenticate with GitHub and pull the code.
 
-   ```bash
-   # Generate a new SSH key (on your local machine)
-   ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/github_actions_deploy
-   ```
+### 1. Setting Up SSH Access from GitHub Action to the Remote Server
 
-   When prompted for a passphrase, you can leave it empty for automation purposes, but be aware this makes the key more vulnerable if compromised.
+A. **Generate an SSH Key Pair**
 
-2. **Add the Public Key to Your Server**
+**On your local machine**, open a terminal and run:
 
-   You need to add the public key to your server's `authorized_keys` file:
+```bash
+ssh-keygen -t ed25519 -C "github-action@yourdomain.com" -f github_action_key
+```
 
-   ```bash
-   # Copy the public key to your server
-   ssh-copy-id -i ~/.ssh/github_actions_deploy.pub your-username@your-server.com
-   ```
+When prompted for a passphrase, you can leave it empty for automation purposes.
 
-   Alternatively, manually add it:
+B. **Install the Public Key on Your Remote Server**
 
-   ```bash
-   cat ~/.ssh/github_actions_deploy.pub | ssh your-username@your-server.com "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
-   ```
+1.  Copy the public key from the generated file (github_action_key.pub).
+2.  SSH into your remote server as your target user.
+3.  Append the public key to the authorized_keys file:
 
-3. **Test the SSH Connection**
+```bash
+echo "paste-your-public-key-here" >> ~/.ssh/authorized_keys
+```
 
-   Verify the key works:
+4.  Ensure proper permissions:
 
-   ```bash
-   ssh -i ~/.ssh/github_actions_deploy your-username@your-server.com
-   ```
+```bash
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/authorized_keys
+```
 
-4. **Get Your Server's SSH Fingerprint**
+C. Configure Your GitHub Repository to Use the Private Key
 
-   You need this for the `KNOWN_HOSTS` secret:
+1.  In your GitHub repository, navigate to Settings > Secrets and variables > Actions.
+2.  Add a new repository secret named SSH_PRIVATE_KEY and paste the contents of your private key file (github_action_key).
 
-   ```bash
-   ssh-keyscan -H your-server.com > known_hosts.txt
-   ```
+### 2. Setting Up a Deploy Key on the Remote Server for GitHub Pulls
 
-5. **Set Up GitHub Repository Secrets**
+**A. Generate a Deploy Key on the Remote Server**
 
-   Now, let's add the required secrets to your GitHub repository:
+1.  SSH into your remote server if not already connected.
+2.  Generate a new SSH key pair for the deploy key:
 
-   - Go to your GitHub repository
-   - Navigate to "Settings" → "Secrets and variables" → "Actions"
-   - Click "New repository secret" and add each of these:
+```bash
+ssh-keygen -t rsa -b 4096 -C "deploy-key-for-your-repo" -f ~/.ssh/deploy_key
+```
 
-     - **SSH_PRIVATE_KEY**
+**B. Add the Deploy Key to Your GitHub Repository**
 
-       ```bash
-       # Get the private key content
-       cat ~/.ssh/github_actions_deploy
-       ```
+1. Copy the public key from the remote server:
 
-       Copy the entire output (including BEGIN and END lines) into this secret.
+```bash
+cat ~/.ssh/deploy_key.pub
+```
 
-     - **KNOWN_HOSTS**
+2. In your GitHub repository, go to Settings > Deploy keys.
+3. Click “Add deploy key”, provide a title (e.g., "Remote Server Deploy Key"), and paste the public key.
+4. For pulling code, read-only access is sufficient. Only grant write access if necessary.
 
-       ```bash
-       # Get the known hosts content
-       cat known_hosts.txt
-       ```
+**C. Configure SSH on the Remote Server to Use the Deploy Key for GitHub**
 
-       Copy the entire output into this secret.
+1. Edit (or create) the SSH config file on the remote server (~/.ssh/config):
 
-     - **SERVER_USER**
-       Your SSH username (e.g., ubuntu, root, etc.)
+```bash
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/deploy_key
+    IdentitiesOnly yes
+```
 
-     - **SERVER_HOST**
-       Your server's hostname or IP address (e.g., example.com or 123.45.67.89)
+2. Ensure the file permissions are correct:
 
-     - **PROJECT_PATH**
-       The full path to your SilverStripe project on the server (e.g., /var/www/container/application)
+```bash
+chmod 600 ~/.ssh/deploy_key
+chmod 600 ~/.ssh/config
+chmod 700 ~/.ssh
+```
 
-6. **Verify Server-Side Git Permissions**
+3. Test the SSH connection to GitHub:
 
-   Make sure your server can pull from your repository:
-
-   - If your repository is public, this should work automatically.
-   - If your repository is private, you need to set up SSH access from your server to GitHub:
-
-     ```bash
-     # On your server, generate an SSH key if you don't have one
-     ssh-keygen -t ed25519 -C "server-github-access"
-
-     # Display the public key
-     cat ~/.ssh/id_ed25519.pub
-     ```
-
-     Then add this public key to your GitHub account or as a deploy key in your repository.
-
-7. **Test the Git Pull on Server**
-
-   SSH into your server and test if `git pull` works:
-
-   ```bash
-   cd /path/to/your/project
-   git pull
-   ```
-
-   If this works without prompting for a password, you're good to go!
-
-8. **Verify Your Workflow File**
-
-   Make sure your `.github/workflows/deploy.yml` file is correctly set up and committed to your repository.
-
-After completing these steps, your GitHub Actions workflow should be ready to deploy your SilverStripe project automatically whenever you push to the master branch.
+```bash
+ssh -T git@github.com
+```
