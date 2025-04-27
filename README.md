@@ -29,11 +29,10 @@ ssh-keygen -t ed25519 -C "github-action@yourdomain.com" -f github_action_key
 
 When prompted for a passphrase, you can leave it empty for automation purposes.
 
-B. **Install the Public Key on Your Remote Server**
+B. **Add the key to your container's ssh user**
 
 1.  Copy the public key from the generated file (github_action_key.pub).
-2.  SSH into your remote server as your target user.
-3.  Ensure the .ssh dir exists:
+2.  Add it as an SSH key in sitehost contorl panel, then add it to the user
 
 ```bash
 mkdir -p ~/.ssh
