@@ -106,3 +106,15 @@ ssh -T git@github.com
 ```
 
 4. When prompted, add github to the list of known hosts.
+
+D. **Preparing for deployment**
+
+cd container
+
+rm -fr application
+
+ignore warning
+
+cd application
+
+git clone your repo
