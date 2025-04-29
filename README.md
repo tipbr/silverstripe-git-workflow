@@ -38,11 +38,7 @@ B. **Add the key to your container's ssh user**
 mkdir -p ~/.ssh
 ```
 
-5.  Append the public key to the authorized_keys file:
-
-```bash
-echo "paste-your-public-key-here" >> ~/.ssh/authorized_keys
-```
+5.  Add the public key to the user in sitehost control panel
 
 4.  Ensure proper permissions:
 
